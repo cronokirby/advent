@@ -92,7 +92,7 @@ data ProblemInfo = ProblemInfo
 
 data Problem = forall i o. (Show i, Eq o, Show o) => Problem
     { solution :: Solution i o
-    , mainFile :: FilePath
+    , promptFile :: FilePath
     , testFiles :: [TestFile]
     , testCases :: [TestCase i o]
     , info :: ProblemInfo

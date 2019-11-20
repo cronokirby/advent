@@ -36,22 +36,26 @@ runTestFiles Problem {..} = do
                 <> inputTxt
                 )
             Just i ->
-                let
-                    cse        = TestCase i outputData
+                let cse = TestCase i outputData
                 in  return (runTestCase (textSolution solution) index cse)
 
 main :: IO ()
 main = forM_ problems $ \p@Problem {..} -> do
     let ProblemInfo {..} = info
-    putTextLn (mconcat [show year <> "年" <> show day <> "日 - " <> name <> ":"])
-    putText "Test Files:"
+    putTextLn (mconcat ["\x1b[4m", show year, "年", show day, "日 - ", name, ":", "\x1b[0m"])
     fileResults <- filter failed <$> runTestFiles p
-    printResults fileResults
-    putText "Test Cases:"
+    printResults "Test Files:" fileResults
     let caseResults = filter failed (runTestCases p)
-    printResults caseResults
+    printResults "Test Cases:" caseResults
+    putTextLn "Solution:"
+    prompt <- readFileText promptFile
+    let Solution{..} = solution
+    case parse prompt of
+        Nothing -> putTextLn ("Failed to parse prompt:\n" <> prompt)
+        Just parsed -> putTextLn ("\x1b[36m" <> show (solve parsed) <> "\x1b[0m")
   where
-    printResults [] = putTextLn " Ok!"
-    printResults rs = do
-        putTextLn ""
+    printResults msg [] = putTextLn ("\x1b[32m" <> msg <> " Ok!" <> "\x1b[0m")
+    printResults msg rs = do
+        putTextLn ("\x1b[31m" <> msg)
         forM_ rs (putTextLn . prettyTestResult)
+        putText "\x1b[0m"
