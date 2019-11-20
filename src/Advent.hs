@@ -7,10 +7,15 @@ module Advent
     ( Solution(..)
     , TestFile(..)
     , TestCase(..)
+    , Outcome(..)
+    , TestResult(..)
     , ProblemInfo(..)
     , Problem(..)
+    , failed
     , prettyTestResult
+    , runTestCase
     , runTestCases
+    , textSolution
     )
 where
 
@@ -23,9 +28,12 @@ data Solution i o = Solution
     , solve :: i -> o
     }
 
+textSolution :: Solution i o -> Solution i Text
+textSolution Solution {..} = Solution parse id (present . solve)
+
 data TestFile = TestFile
-    { input :: Text
-    , output :: Text
+    { input :: FilePath
+    , output :: FilePath
     }
     deriving (Eq, Show)
 
@@ -35,7 +43,7 @@ data TestCase i o = TestCase
     }
     deriving (Eq, Show)
 
-data Outcome = Success | Failed
+data Outcome = Success | Failed deriving (Eq, Show)
 
 data TestResult = forall i o. (Show i, Show o) => TestResult
     { index :: Int
@@ -44,6 +52,9 @@ data TestResult = forall i o. (Show i, Show o) => TestResult
     , expected :: o
     , outcome :: Outcome
     }
+
+failed :: TestResult -> Bool
+failed TestResult {..} = outcome == Failed
 
 runTestCase
     :: (Show i, Show o, Eq o)
@@ -81,6 +92,7 @@ data ProblemInfo = ProblemInfo
 
 data Problem = forall i o. (Show i, Eq o, Show o) => Problem
     { solution :: Solution i o
+    , mainFile :: FilePath
     , testFiles :: [TestFile]
     , testCases :: [TestCase i o]
     , info :: ProblemInfo
