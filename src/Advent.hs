@@ -14,7 +14,8 @@ module Advent
     , failed
     , prettyTestResult
     , runTestCase
-    , runTestCases
+    , runTestCasesA
+    , runTestCasesB
     , textSolution
     )
 where
@@ -22,14 +23,20 @@ where
 import           Relude
 
 
-data Solution i o = Solution
+data Solution i a b = Solution
     { parse :: Text -> Maybe i
-    , present :: o -> Text
-    , solve :: i -> o
+    , presentA :: a -> Text
+    , presentB :: b -> Text
+    , solveA :: i -> a
+    , solveB :: i -> b
     }
 
-textSolution :: Solution i o -> Solution i Text
-textSolution Solution {..} = Solution parse id (present . solve)
+textSolution :: Solution i a b -> Solution i Text Text
+textSolution Solution {..} =
+    Solution parse id id (presentA . solveA) (presentB . solveB)
+
+swapSolution :: Solution i a b -> Solution i b a
+swapSolution Solution {..} = Solution parse presentB presentA solveB solveA
 
 data TestFile = TestFile
     { input :: FilePath
@@ -58,13 +65,13 @@ failed TestResult {..} = outcome == Failed
 
 runTestCase
     :: (Show i, Show o, Eq o)
-    => Solution i o
+    => Solution i o x
     -> Int
     -> TestCase i o
     -> TestResult
 runTestCase Solution {..} index TestCase {..} =
     let expected = output
-        actual   = solve input
+        actual   = solveA input
         outcome  = if expected == actual then Success else Failed
     in  TestResult { .. }
 
@@ -90,14 +97,20 @@ data ProblemInfo = ProblemInfo
     }
     deriving (Eq, Show)
 
-data Problem = forall i o. (Show i, Eq o, Show o) => Problem
-    { solution :: Solution i o
+data Problem = forall i a b. (Show i, Eq a, Show a, Eq b, Show b) => Problem
+    { solution :: Solution i a b
     , promptFile :: FilePath
-    , testFiles :: [TestFile]
-    , testCases :: [TestCase i o]
+    , testFilesA :: [TestFile]
+    , testFilesB :: [TestFile]
+    , testCasesA :: [TestCase i a]
+    , testCasesB :: [TestCase i b]
     , info :: ProblemInfo
     }
 
-runTestCases :: Problem -> [TestResult]
-runTestCases Problem {..} =
-    testCases & zip [0 ..] & map (uncurry (runTestCase solution))
+runTestCasesA :: Problem -> [TestResult]
+runTestCasesA Problem {..} =
+    testCasesA & zip [0 ..] & map (uncurry (runTestCase solution))
+
+runTestCasesB :: Problem -> [TestResult]
+runTestCasesB Problem {..} =
+    testCasesB & zip [0 ..] & map (uncurry (runTestCase (swapSolution solution)))
