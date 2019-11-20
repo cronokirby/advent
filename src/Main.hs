@@ -1,4 +1,8 @@
+{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Main where
 
+import           Relude
+
 main :: IO ()
-main = putStrLn "Hello World"
+main = putTextLn "Hello World"
