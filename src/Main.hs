@@ -43,7 +43,7 @@ main = forM_ problems $ \p@Problem {..} -> do
         )
     fileResultsA <- filter failed <$> runTestFiles solution testFilesA
     printResults "Test Files A:" fileResultsA
-    fileResultsB <- filter failed <$> runTestFiles solution testFilesB
+    fileResultsB <- filter failed <$> runTestFiles (swapSolution solution) testFilesB
     printResults "Test Files B:" fileResultsB
     let caseResultsA = filter failed (runTestCasesA p)
     printResults "Test Cases A:" caseResultsA

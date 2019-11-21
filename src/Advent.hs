@@ -16,6 +16,7 @@ module Advent
     , runTestCase
     , runTestCasesA
     , runTestCasesB
+    , swapSolution
     , textSolution
     )
 where
@@ -112,5 +113,5 @@ runTestCasesA Problem {..} =
     testCasesA & zip [0 ..] & map (uncurry (runTestCase solution))
 
 runTestCasesB :: Problem -> [TestResult]
-runTestCasesB Problem {..} =
-    testCasesB & zip [0 ..] & map (uncurry (runTestCase (swapSolution solution)))
+runTestCasesB Problem {..} = testCasesB & zip [0 ..] & map
+    (uncurry (runTestCase (swapSolution solution)))
