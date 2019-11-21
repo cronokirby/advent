@@ -55,6 +55,6 @@ problem = A.Problem theSolution
                     "data/prompt-2019-1.txt"
                     testFilesA
                     testFilesB
-                    [A.TestCase [1, 1, (-2)] 0]
-                    [A.TestCase [3, 3, 4, (-2), (-4)] 10]
+                    [A.TestCase [1, 1, -2] 0]
+                    [A.TestCase [3, 3, 4, -2, -4] 10]
                     (A.ProblemInfo "Chronal Calibration" 2018 1)
