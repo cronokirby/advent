@@ -10,39 +10,10 @@ import           Advent
 import qualified Y2018.D1
 
 problems :: [Problem]
-problems =
-    [ Problem
-        s
-        "data/prompt-2019-0.txt"
-        [TestFile "data/input-2019-0-0.txt" "data/output-2019-0-0.txt"]
-        []
-        [TestCase 0 3]
-        [TestCase 0 10, TestCase 1 11]
-        (ProblemInfo "Example" 2019 0)
-    , Y2018.D1.problem
-    ]
+problems = [Y2018.D1.problem]
   where
     s :: Solution Int Int Int
     s = Solution (rightToMaybe . readEither) show show (+ 3) (+ 10)
-
-runTestFilesA :: Problem -> IO [TestResult]
-runTestFilesA Problem {..} = do
-    let Solution {..} = solution
-    forM (zip [0 ..] testFilesA) $ \(index, TestFile {..}) -> do
-        inputTxt <- readFileText input
-        let inputData = parse inputTxt
-        outputData <- readFileText output
-        case inputData of
-            Nothing -> error
-                (  "File: "
-                <> toText input
-                <> " \n"
-                <> "Failed to read input:\n"
-                <> inputTxt
-                )
-            Just i ->
-                let cse = TestCase i outputData
-                in  return (runTestCase (textSolution solution) index cse)
 
 runTestFiles
     :: (Show i, Show a) => Solution i a b -> [TestFile] -> IO [TestResult]
