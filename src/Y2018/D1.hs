@@ -52,7 +52,7 @@ testFilesB =
 
 problem :: A.Problem
 problem = A.Problem theSolution
-                    "data/prompt-2019-1.txt"
+                    "data/prompt-2018-1.txt"
                     testFilesA
                     testFilesB
                     [A.TestCase [1, 1, -2] 0]
