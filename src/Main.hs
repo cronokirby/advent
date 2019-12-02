@@ -9,9 +9,10 @@ import           Advent
 
 import qualified Y2018.D1
 import qualified Y2019.D1
+import qualified Y2019.D2
 
 problems :: [Problem]
-problems = [Y2018.D1.problem, Y2019.D1.problem]
+problems = [Y2018.D1.problem, Y2019.D1.problem, Y2019.D2.problem]
   where
     s :: Solution Int Int Int
     s = Solution (rightToMaybe . readEither) show show (+ 3) (+ 10)
