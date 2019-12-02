@@ -46,7 +46,6 @@ execNounVerb input noun verb = runST $ do
                 MV.write vec i3 (opToFun op arg1 arg2)
                 step vec (i + 4)
 
-
 solve1 :: Input -> Int
 solve1 input = execNounVerb input 12 2
 
