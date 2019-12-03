@@ -10,9 +10,11 @@ import           Advent
 import qualified Y2018.D1
 import qualified Y2019.D1
 import qualified Y2019.D2
+import qualified Y2019.D3
 
 problems :: [Problem]
-problems = [Y2018.D1.problem, Y2019.D1.problem, Y2019.D2.problem]
+problems =
+    [Y2018.D1.problem, Y2019.D1.problem, Y2019.D2.problem, Y2019.D3.problem]
   where
     s :: Solution Int Int Int
     s = Solution (rightToMaybe . readEither) show show (+ 3) (+ 10)
@@ -45,7 +47,8 @@ main = forM_ problems $ \p@Problem {..} -> do
         )
     fileResultsA <- filter failed <$> runTestFiles solution testFilesA
     printResults "Test Files A:" fileResultsA
-    fileResultsB <- filter failed <$> runTestFiles (swapSolution solution) testFilesB
+    fileResultsB <-
+        filter failed <$> runTestFiles (swapSolution solution) testFilesB
     printResults "Test Files B:" fileResultsB
     let caseResultsA = filter failed (runTestCasesA p)
     printResults "Test Cases A:" caseResultsA
