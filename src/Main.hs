@@ -12,10 +12,11 @@ import qualified Y2018.D1
 import qualified Y2019.D1
 import qualified Y2019.D2
 import qualified Y2019.D3
+import qualified Y2019.D4
 
 problems :: [Problem]
 problems =
-    [Y2018.D1.problem, Y2019.D1.problem, Y2019.D2.problem, Y2019.D3.problem]
+    [Y2018.D1.problem, Y2019.D1.problem, Y2019.D2.problem, Y2019.D3.problem, Y2019.D4.problem]
   where
     s :: Solution Int Int Int
     s = Solution (rightToMaybe . readEither) show show (+ 3) (+ 10)
