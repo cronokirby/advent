@@ -4,7 +4,6 @@
 {-# LANGUAGE RecordWildCards #-}
 module Y2019.D4
     ( problem
-    , runLengths
     )
 where
 
