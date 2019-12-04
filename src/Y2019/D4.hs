@@ -40,7 +40,6 @@ validWithCond Input {..} cond x =
     digits :: Int -> [Int]
     digits x | x < 10    = [x]
              | otherwise = mod x 10 : digits (div x 10)
-
     decreasing :: Ord o => [o] -> Bool
     decreasing xs = case xs of
         []           -> True
