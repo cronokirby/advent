@@ -10,9 +10,6 @@ where
 import           Relude
 import qualified Advent                        as A
 
-import           Data.Foldable                  ( minimum )
-import qualified Data.HashSet                  as Set
-import qualified Data.Text                     as T
 import qualified Text.ParserCombinators.ReadP  as P
 
 data Input = Input { start :: Int, end :: Int } deriving (Eq, Show)
@@ -64,8 +61,9 @@ runLengths []       = []
 runLengths (x : xs) = go 1 x xs
   where
     go n t xs = case xs of
-        []     -> [n]
-        x : xs -> if x == t then go (n + 1) t xs else n : go 1 x xs
+        []              -> [n]
+        x : xs | x == t -> go (n + 1) t xs
+        x : xs          -> n : go 1 x xs
 
 valid2 :: Input -> Int -> Bool
 valid2 input = validWithCond input existsIsolatedPair
@@ -92,4 +90,4 @@ problem = A.Problem theSolution
                     []
                     testsA
                     testsB
-                    (A.ProblemInfo "Crossed Wires" 2019 4)
+                    (A.ProblemInfo "Secure Container" 2019 4)
