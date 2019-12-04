@@ -6,6 +6,7 @@ module Main where
 import           Relude
 
 import           Advent
+import           System.Environment             ( getArgs )
 
 import qualified Y2018.D1
 import qualified Y2019.D1
@@ -39,31 +40,53 @@ runTestFiles solution@Solution {..} testFiles =
                 in  return (runTestCase (textSolution solution) index cse)
 
 main :: IO ()
-main = forM_ problems $ \p@Problem {..} -> do
-    let ProblemInfo {..} = info
-    putTextLn
-        (mconcat
-            ["\x1b[4m", show year, "年", show day, "日 - ", name, ":", "\x1b[0m"]
-        )
-    fileResultsA <- filter failed <$> runTestFiles solution testFilesA
-    printResults "Test Files A:" fileResultsA
-    fileResultsB <-
-        filter failed <$> runTestFiles (swapSolution solution) testFilesB
-    printResults "Test Files B:" fileResultsB
-    let caseResultsA = filter failed (runTestCasesA p)
-    printResults "Test Cases A:" caseResultsA
-    let caseResultsB = filter failed (runTestCasesB p)
-    printResults "Test Cases B:" caseResultsB
-    let Solution {..} = solution
-    prompt <- readFileText promptFile
-    case parse prompt of
-        Nothing     -> putTextLn ("Failed to parse prompt:\n" <> prompt)
-        Just parsed -> do
-            putTextLn "Solution A:"
-            putTextLn ("\x1b[36m" <> presentA (solveA parsed) <> "\x1b[0m")
-            putTextLn "Solution B:"
-            putTextLn ("\x1b[36m" <> presentB (solveB parsed) <> "\x1b[0m")
+main = do
+    args <- getArgs
+    let mb = case args of
+            [a, b] -> (,) <$> readMaybe a <*> readMaybe b
+            _      -> Nothing
+    let
+        probs = case mb of
+            Nothing     -> problems
+            Just (y, d) -> filter
+                (\Problem {..} ->
+                    let ProblemInfo {..} = info in year == y && day == d
+                )
+                problems
+    forM_ probs run
   where
+    run p@Problem {..} = do
+        let ProblemInfo {..} = info
+        putTextLn
+            (mconcat
+                [ "\x1b[4m"
+                , show year
+                , "年"
+                , show day
+                , "日 - "
+                , name
+                , ":"
+                , "\x1b[0m"
+                ]
+            )
+        fileResultsA <- filter failed <$> runTestFiles solution testFilesA
+        printResults "Test Files A:" fileResultsA
+        fileResultsB <-
+            filter failed <$> runTestFiles (swapSolution solution) testFilesB
+        printResults "Test Files B:" fileResultsB
+        let caseResultsA = filter failed (runTestCasesA p)
+        printResults "Test Cases A:" caseResultsA
+        let caseResultsB = filter failed (runTestCasesB p)
+        printResults "Test Cases B:" caseResultsB
+        let Solution {..} = solution
+        prompt <- readFileText promptFile
+        case parse prompt of
+            Nothing     -> putTextLn ("Failed to parse prompt:\n" <> prompt)
+            Just parsed -> do
+                putTextLn "Solution A:"
+                putTextLn ("\x1b[36m" <> presentA (solveA parsed) <> "\x1b[0m")
+                putTextLn "Solution B:"
+                putTextLn ("\x1b[36m" <> presentB (solveB parsed) <> "\x1b[0m")
     printResults msg [] = putTextLn ("\x1b[32m" <> msg <> " Ok!" <> "\x1b[0m")
     printResults msg rs = do
         putTextLn ("\x1b[31m" <> msg)
