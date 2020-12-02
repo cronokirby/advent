@@ -7,7 +7,7 @@ homepage:       https://github.com/cronokirby/advent#readme
 bug-reports:    https://github.com/cronokirby/advent/issues
 author:         Lúcás Meier
 maintainer:     cronokirby@gmail.com
-copyright:      2019 Lúcás Meier
+copyright:      2020 Lúcás Meier
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
@@ -34,7 +34,7 @@ executable advent
   build-depends:
       base >=4.7 && <5
     , monad-loops
-    , relude>=0.5 && <0.6
+    , relude>=0.7 && <0.8
     , text
     , unordered-containers >=0.2 && <0.3
     , vector

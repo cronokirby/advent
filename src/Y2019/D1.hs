@@ -12,7 +12,7 @@ import qualified Advent as A
 type Input = [Int]
 
 readInput :: Text -> Maybe Input
-readInput = mapM (rightToMaybe . readEither) . lines
+readInput = mapM (rightToMaybe . readEither . toString) . lines
 
 solve1 :: Input -> Int
 solve1 = sum . map (\x -> div x 3 - 2)

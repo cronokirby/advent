@@ -21,7 +21,7 @@ problems =
     [Y2018.D1.problem, Y2019.D1.problem, Y2019.D2.problem, Y2019.D3.problem, Y2019.D4.problem, Y2019.D5.problem, Y2019.D6.problem]
   where
     s :: Solution Int Int Int
-    s = Solution (rightToMaybe . readEither) show show (+ 3) (+ 10)
+    s = Solution (rightToMaybe . readEither . toString) show show (+ 3) (+ 10)
 
 runTestFiles
     :: (Show i, Show a) => Solution i a b -> [TestFile] -> IO [TestResult]

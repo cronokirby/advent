@@ -9,9 +9,7 @@ where
 import           Relude
 import qualified Advent                        as A
 
-import           Control.Monad.Loops            ( whileM_ )
 import           Control.Monad.ST               ( runST )
-import           Data.STRef
 import qualified Data.Text                     as T
 import qualified Data.Vector                   as V
 import qualified Data.Vector.Mutable           as MV
@@ -19,7 +17,7 @@ import qualified Data.Vector.Mutable           as MV
 type Input = [Int]
 
 readInput :: Text -> Maybe Input
-readInput = rightToMaybe . traverse readEither . T.splitOn ","
+readInput = rightToMaybe . traverse (readEither . toString) . T.splitOn ","
 
 execNounVerb :: Input -> Int -> Int -> Int
 execNounVerb input noun verb = runST $ do

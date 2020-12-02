@@ -16,7 +16,7 @@ import qualified Data.Vector.Mutable as MV
 type Input = [Int]
 
 readInput :: Text -> Maybe Input
-readInput = rightToMaybe . traverse readEither . T.splitOn ","
+readInput = rightToMaybe . traverse (readEither . toString) . T.splitOn ","
 
 type Index = Int
 

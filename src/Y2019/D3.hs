@@ -29,7 +29,7 @@ readInput input = do
     readMove :: Text -> Maybe Move
     readMove input = do
         (c, cs) <- T.uncons input
-        int     <- rightToMaybe $ readEither cs
+        int     <- rightToMaybe $ readEither (toString cs)
         case c of
             'R' -> Just (R int)
             'U' -> Just (U int)
