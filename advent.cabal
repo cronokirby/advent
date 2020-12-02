@@ -21,6 +21,7 @@ source-repository head
 executable advent
   main-is: Main.hs
   other-modules: Advent
+               , Ourlude
                , Y2018.D1
                , Y2019.D1
                , Y2019.D2
