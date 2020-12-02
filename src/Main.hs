@@ -14,6 +14,7 @@ import qualified Y2019.D3
 import qualified Y2019.D4
 import qualified Y2019.D5
 import qualified Y2019.D6
+import qualified Y2020.D1
 import qualified Y2020.D2
 
 problems :: [Problem]
@@ -25,11 +26,9 @@ problems =
     Y2019.D4.problem,
     Y2019.D5.problem,
     Y2019.D6.problem,
+    Y2020.D1.problem,
     Y2020.D2.problem
   ]
-  where
-    s :: Solution Int Int Int
-    s = Solution (rightToMaybe . readEither . toString) show show (+ 3) (+ 10)
 
 runTestFiles ::
   (Show i, Show a) => Solution i a b -> [TestFile] -> IO [TestResult]

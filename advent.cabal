@@ -29,6 +29,7 @@ executable advent
                , Y2019.D4
                , Y2019.D5
                , Y2019.D6
+               , Y2020.D1
                , Y2020.D2
   hs-source-dirs:
       src
