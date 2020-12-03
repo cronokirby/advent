@@ -52,4 +52,4 @@ theSolution :: A.Solution Grid Int Int
 theSolution = A.Solution readInput show show solve1 solve2
 
 problem :: A.Problem
-problem = A.Problem theSolution "data/prompt-2020-3.txt" [] [] [] [] (A.ProblemInfo "TODO" 2020 3)
+problem = A.Problem theSolution "data/prompt-2020-3.txt" [] [] [] [] (A.ProblemInfo "Toboggan Trajectory" 2020 3)
