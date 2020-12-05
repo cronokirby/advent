@@ -84,4 +84,4 @@ testFilesB =
   ]
 
 problem :: A.Problem
-problem = A.Problem theSolution "data/prompt-2020-4.txt" [] testFilesB [] [] (A.ProblemInfo "TODO" 2020 4)
+problem = A.Problem theSolution "data/prompt-2020-4.txt" [] testFilesB [] [] (A.ProblemInfo "Passport Processing" 2020 4)
