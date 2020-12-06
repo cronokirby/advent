@@ -6,7 +6,7 @@ import Ourlude
 import Data.List (foldr1)
 import qualified Data.Text as T
 
-data Group = Group { gSets :: [Set.Set Char] } deriving (Eq, Show)
+newtype Group = Group { gSets :: [Set.Set Char] } deriving (Eq, Show)
 
 type Input = [Group]
 
