@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase #-}
-module Y2020.D7 where
+module Y2020.D7 (problem) where
 
 import qualified Advent as A
 import Data.Char (isDigit, isSpace)
@@ -129,4 +129,4 @@ theSolution :: A.Solution Input Output1 Output2
 theSolution = A.Solution readInput show show solve1 solve2
 
 problem :: A.Problem
-problem = A.Problem theSolution "data/prompt-2020-7.txt" [] [] [] [] (A.ProblemInfo "TODO" 2020 7)
+problem = A.Problem theSolution "data/prompt-2020-7.txt" [] [] [] [] (A.ProblemInfo "Handy Haversacks" 2020 7)
