@@ -1,10 +1,9 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Y2020.D8 (problem) where
 
 import qualified Advent as A
 import qualified Data.Set as Set
 import qualified Data.Text as T
-import Data.Vector ((//), (!?))
+import Data.Vector ((//))
 import qualified Data.Vector as V
 import Ourlude
 
