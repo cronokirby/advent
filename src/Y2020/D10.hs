@@ -12,13 +12,16 @@ type Input = [Int]
 readInput :: Text -> Maybe Input
 readInput = lines >>> traverse (toString >>> readMaybe)
 
+children :: Int -> [Int]
+children x = map (+ x) [1 .. 3]
+
 chain :: [Int] -> [Int]
 chain input = go 0 (Set.fromList input) [] |> reverse
   where
     go current set acc
       | Set.null set = (current + 3) : current : acc
       | otherwise =
-        let Just smallest = find (`Set.member` set) [current + 1, current + 2, current + 3]
+        let Just smallest = find (`Set.member` set) (children current)
          in go smallest (Set.delete smallest set) (current : acc)
 
 type Output1 = Int
@@ -38,14 +41,12 @@ type Output2 = Integer
 solve2 :: Input -> Output2
 solve2 input =
   let max = maximum input
-      mp =
-        Map.singleton (max, max) 1
-          <> Map.fromList [((x, y), paths x y) | x <- 0 : input, y <- max : 0 : input]
+      fullInput = max : 0 : input
+      mp = Map.fromList [((x, y), paths x y) | x <- fullInput, y <- fullInput]
         where
           paths x y
             | x == y = 1
-            | otherwise =
-              [x + 1, x + 2, x + 3] |> map (\k -> Map.lookup (k, y) mp) |> catMaybes |> sum
+            | otherwise = children x |> map (\k -> Map.findWithDefault 0 (k, y) mp) |> sum
    in mp ! (0, max)
 
 testCasesB :: [A.TestCase Input Output2]
