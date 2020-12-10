@@ -23,6 +23,7 @@ import qualified Y2020.D6
 import qualified Y2020.D7
 import qualified Y2020.D8
 import qualified Y2020.D9
+import qualified Y2020.D10
 
 problems :: [Problem]
 problems =
@@ -41,7 +42,8 @@ problems =
     Y2020.D6.problem,
     Y2020.D7.problem,
     Y2020.D8.problem,
-    Y2020.D9.problem
+    Y2020.D9.problem,
+    Y2020.D10.problem
   ]
 
 runTestFiles ::
