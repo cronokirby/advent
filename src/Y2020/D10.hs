@@ -59,4 +59,4 @@ theSolution :: A.Solution Input Output1 Output2
 theSolution = A.Solution readInput show show solve1 solve2
 
 problem :: A.Problem
-problem = A.Problem theSolution "data/prompt-2020-10.txt" [] [] testCasesA testCasesB (A.ProblemInfo "TODO" 2020 10)
+problem = A.Problem theSolution "data/prompt-2020-10.txt" [] [] testCasesA testCasesB (A.ProblemInfo "Adapter Array" 2020 10)
