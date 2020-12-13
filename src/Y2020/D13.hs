@@ -46,15 +46,16 @@ bezout a b = case a of
     let (x, y) = bezout (b `mod` a) a
     in (y - (b `div` a) * x, x)
 
+fullMod :: Integer -> Integer -> Integer
+fullMod x m = mod (mod x m + m) m
+
 solveCong :: [(Integer, Integer)] -> Integer
-solveCong congs =
-  let bigM = congs |> map snd |> product
-      go x (a, n) =
-        let mOverN = bigM `div` n
-            (m, _) = bezout mOverN n
-        in x + a * m * mOverN
-      final = foldl' go 0 congs
-  in ((final `mod` bigM) + bigM) `mod` bigM
+solveCong [] = 0
+solveCong [(a, n)] = a `fullMod` n
+solveCong ((a1, n1) : (a2, n2) : rest) =
+  let (m1, m2) = bezout n1 n2
+      x = a1 * m2 * n2 + a2 * m1 * n1
+  in solveCong ((x, n1 * n2) : rest)
 
 solve2 :: Input -> Output2
 solve2 (Info _ buses') =
