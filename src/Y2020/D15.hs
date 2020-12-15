@@ -34,7 +34,7 @@ getAt target input = runST do
   go (Env arr lastVal now)
   where
     go :: Env s -> ST s Int
-    go env@(Env arr lastValRef' nowRef') = do
+    go env@(Env _ lastValRef' nowRef') = do
       now <- readSTRef nowRef'
       if now == target
         then readSTRef lastValRef'
@@ -43,7 +43,6 @@ getAt target input = runST do
     step :: Env s -> ST s Int
     step env@(Env arr lastValRef' nowRef') = do
       now <- readSTRef nowRef'
-      traceShow now (return ())
       lastVal <- readSTRef lastValRef'
       speak <- MV.read arr lastVal >>= \case
         NeverSpoken -> return 0
