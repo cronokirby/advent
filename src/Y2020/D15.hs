@@ -5,9 +5,8 @@ module Y2020.D15 (problem) where
 
 import qualified Advent as A
 import Control.Monad.ST as ST
-import Data.STRef (STRef, modifySTRef', newSTRef, readSTRef)
 import qualified Data.Text as T
-import qualified Data.Vector.Mutable as MV
+import qualified Data.Vector.Unboxed.Mutable as MV
 import Ourlude
 
 type Input = [Int]
@@ -17,14 +16,12 @@ readInput = T.splitOn "," >>> traverse (toString >>> readMaybe)
 
 type Output1 = Int
 
-data Spoken = NeverSpoken | SpokenOnce Int | SpokenAtLeastTwice Int Int
-
-data Env s = Env (MV.STVector s Spoken) Int Int
+data Env s = Env (MV.STVector s (Int, Int)) Int Int
 
 getAt :: Int -> Input -> Int
 getAt target input = runST do
-  arr <- MV.replicate target NeverSpoken
-  forM_ (zip [0 ..] input) (\(i, x) -> MV.write arr x (SpokenOnce i))
+  arr <- MV.replicate target (-1, -1)
+  forM_ (zip [0 ..] input) (\(i, x) -> MV.write arr x (i, -1))
   go (Env arr 420 (length input))
   where
     go :: Env s -> ST s Int
@@ -32,13 +29,10 @@ getAt target input = runST do
     go (Env arr lastVal now) = do
       speak <-
         MV.read arr lastVal >>= \case
-          NeverSpoken -> return 0
-          SpokenOnce _ -> return 0
-          SpokenAtLeastTwice recently earlier -> return (recently - earlier)
-      let change = \case
-            NeverSpoken -> SpokenOnce now
-            SpokenOnce recently -> SpokenAtLeastTwice now recently
-            SpokenAtLeastTwice recently _ -> SpokenAtLeastTwice now recently
+          (-1, -1) -> return 0
+          (_, -1) -> return 0
+          (x, y) -> return (x - y)
+      let change = \(x, _) -> (now, x)
       speak `seq` MV.modify arr change speak
       go (Env arr speak (now + 1))
 
