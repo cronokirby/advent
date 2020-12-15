@@ -5,7 +5,7 @@ module Y2020.D15 (problem) where
 
 import qualified Advent as A
 import Control.Monad.ST as ST
-import Data.STRef (STRef, modifySTRef, writeSTRef, readSTRef, newSTRef)
+import Data.STRef (STRef, modifySTRef', newSTRef, readSTRef)
 import qualified Data.Text as T
 import qualified Data.Vector.Mutable as MV
 import Ourlude
@@ -19,43 +19,28 @@ type Output1 = Int
 
 data Spoken = NeverSpoken | SpokenOnce Int | SpokenAtLeastTwice Int Int
 
-data Env s = Env
-  { arr :: MV.STVector s Spoken,
-    lastValRef :: STRef s Int,
-    nowRef :: STRef s Int
-  }
+data Env s = Env (MV.STVector s Spoken) Int Int
 
 getAt :: Int -> Input -> Int
 getAt target input = runST do
   arr <- MV.replicate target NeverSpoken
-  lastVal <- newSTRef 420
-  now <- newSTRef (length input)
-  forM_ (zip [0..] input) (\(i, x) -> MV.write arr x (SpokenOnce i))
-  go (Env arr lastVal now)
+  forM_ (zip [0 ..] input) (\(i, x) -> MV.write arr x (SpokenOnce i))
+  go (Env arr 420 (length input))
   where
     go :: Env s -> ST s Int
-    go env@(Env _ lastValRef' nowRef') = do
-      now <- readSTRef nowRef'
-      if now == target
-        then readSTRef lastValRef'
-        else step env
-
-    step :: Env s -> ST s Int
-    step env@(Env arr lastValRef' nowRef') = do
-      now <- readSTRef nowRef'
-      lastVal <- readSTRef lastValRef'
-      speak <- MV.read arr lastVal >>= \case
-        NeverSpoken -> return 0
-        SpokenOnce _ -> return 0
-        SpokenAtLeastTwice recently earlier -> return (recently - earlier)
+    go (Env _ lastVal now) | now == target = return lastVal
+    go (Env arr lastVal now) = do
+      speak <-
+        MV.read arr lastVal >>= \case
+          NeverSpoken -> return 0
+          SpokenOnce _ -> return 0
+          SpokenAtLeastTwice recently earlier -> return (recently - earlier)
       let change = \case
             NeverSpoken -> SpokenOnce now
             SpokenOnce recently -> SpokenAtLeastTwice now recently
             SpokenAtLeastTwice recently _ -> SpokenAtLeastTwice now recently
-      MV.modify arr change speak
-      writeSTRef nowRef' (now + 1)
-      writeSTRef lastValRef' speak
-      go env
+      speak `seq` MV.modify arr change speak
+      go (Env arr speak (now + 1))
 
 solve1 :: Input -> Output1
 solve1 = getAt 2020
