@@ -1,11 +1,14 @@
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE LambdaCase #-}
 
 module Y2020.D15 (problem) where
 
 import qualified Advent as A
-import Ourlude
-import qualified Data.Map as Map
+import Control.Monad.ST as ST
+import Data.STRef (STRef, modifySTRef, writeSTRef, readSTRef, newSTRef)
 import qualified Data.Text as T
+import qualified Data.Vector.Mutable as MV
+import Ourlude
 
 type Input = [Int]
 
@@ -14,30 +17,49 @@ readInput = T.splitOn "," >>> traverse (toString >>> readMaybe)
 
 type Output1 = Int
 
-data Spoken = SpokenOnce Int | SpokenAtLeastTwice Int Int
+data Spoken = NeverSpoken | SpokenOnce Int | SpokenAtLeastTwice Int Int
 
-type State1 = (Int, [Int], Int, Map.Map Int Spoken)
+data Env s = Env
+  { arr :: MV.STVector s Spoken,
+    lastValRef :: STRef s Int,
+    nowRef :: STRef s Int
+  }
 
-getAt :: Int -> Input  -> Int
-getAt target input = go (0, input, 420, Map.empty)
+getAt :: Int -> Input -> Int
+getAt target input = runST do
+  arr <- MV.replicate target NeverSpoken
+  lastVal <- newSTRef 420
+  now <- newSTRef (length input)
+  forM_ (zip [0..] input) (\(i, x) -> MV.write arr x (SpokenOnce i))
+  go (Env arr lastVal now)
   where
-    go :: State1 -> Int
-    go (now, _, lastVal, _) | now == target = lastVal
-    go (now, x : xs, _, mp) =
-      let !newState = (now + 1, xs, x, Map.insert x (SpokenOnce now) mp)
-      in go newState
-    go (now, [], lastVal, mp) =
-      let speak = case fromMaybe (error "last val not there") (Map.lookup lastVal mp) of
-            SpokenOnce _ -> 0
-            SpokenAtLeastTwice recently earlier -> recently - earlier
-          see Nothing = Just (SpokenOnce now)
-          see (Just (SpokenOnce earlier)) = Just (SpokenAtLeastTwice now earlier)
-          see (Just (SpokenAtLeastTwice recently _)) = Just (SpokenAtLeastTwice now recently)
-          !newState = (now + 1, [], speak, Map.alter see speak mp)
-      in go newState
+    go :: Env s -> ST s Int
+    go env@(Env arr lastValRef' nowRef') = do
+      now <- readSTRef nowRef'
+      if now == target
+        then readSTRef lastValRef'
+        else step env
+
+    step :: Env s -> ST s Int
+    step env@(Env arr lastValRef' nowRef') = do
+      now <- readSTRef nowRef'
+      traceShow now (return ())
+      lastVal <- readSTRef lastValRef'
+      speak <- MV.read arr lastVal >>= \case
+        NeverSpoken -> return 0
+        SpokenOnce _ -> return 0
+        SpokenAtLeastTwice recently earlier -> return (recently - earlier)
+      let change = \case
+            NeverSpoken -> SpokenOnce now
+            SpokenOnce recently -> SpokenAtLeastTwice now recently
+            SpokenAtLeastTwice recently _ -> SpokenAtLeastTwice now recently
+      MV.modify arr change speak
+      writeSTRef nowRef' (now + 1)
+      writeSTRef lastValRef' speak
+      go env
 
 solve1 :: Input -> Output1
-solve1 = getAt 2000
+solve1 = getAt 2020
 
 testCasesA :: [A.TestCase Input Output1]
 testCasesA = [A.TestCase [0, 3, 6] 436, A.TestCase [1, 3, 2] 1, A.TestCase [2, 1, 3] 10]
