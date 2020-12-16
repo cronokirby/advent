@@ -71,19 +71,17 @@ solve1 (Input rules _ tickets) =
     sumInvalid (Ticket fields) = fields |> filter (not <<< valid) |> foldMap Sum
 
     valid :: Int -> Bool
-    valid x = any (\(Rule _ r1 r2) -> inRange x r1 || inRange x r2) rules
+    valid x = any (satisfies x) rules
 
 type Output2 = Maybe Int
 
 type Index = Int
 
-type Assignment = Map.Map String Index
-
 simpleValidate :: [Rule] -> [Ticket] -> [Ticket]
 simpleValidate rules = filter maybeValidTicket
   where
     maybeValidTicket :: Ticket -> Bool
-    maybeValidTicket (Ticket fields) = any maybeValid fields
+    maybeValidTicket (Ticket fields) = all maybeValid fields
 
     maybeValid :: Int -> Bool
     maybeValid x = any (satisfies x) rules
@@ -93,8 +91,9 @@ ticketCol i (Ticket fields) = fields !! i
 
 solve2 :: Input -> Output2
 solve2 (Input rules myTicket otherTickets) = do
-  assignment <- search 0 []
-  let columns = assignment |> filter (snd >>> isPrefixOf "deparature") |> map fst
+  let m = search 0 []
+  assignment <- m
+  let columns = assignment |> filter (snd >>> isPrefixOf "departure") |> map fst
   return (columns |> map (`ticketCol` myTicket) |> product)
   where
     tickets :: [Ticket]
