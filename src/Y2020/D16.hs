@@ -3,7 +3,8 @@ module Y2020.D16 (problem) where
 import qualified Advent as A
 import Data.Char (isDigit)
 import Data.List (isPrefixOf, (!!))
-import qualified Data.Map.Strict as Map
+import qualified Data.Set as Set
+import qualified Data.Map as Map
 import Ourlude
 import Text.ParserCombinators.ReadP as P
 
@@ -92,10 +93,8 @@ ticketCol i (Ticket fields) = fields !! i
 
 solve2 :: Input -> Output2
 solve2 (Input rules myTicket otherTickets) = do
-  assignment <- search Map.empty
-  traceShow assignment (return ())
-  let departureLabels = filter ("departure" `isPrefixOf`) labels
-  columns <- forM departureLabels (`Map.lookup` assignment)
+  assignment <- search 0 []
+  let columns = assignment |> filter (snd >>> isPrefixOf "deparature") |> map fst
   return (columns |> map (`ticketCol` myTicket) |> product)
   where
     tickets :: [Ticket]
@@ -107,37 +106,32 @@ solve2 (Input rules myTicket otherTickets) = do
     ruleMap :: Map.Map String Rule
     ruleMap = rules |> map (\rule@(Rule s _ _) -> (s, rule)) |> Map.fromList
 
+    ticketLength :: Int
+    ticketLength =
+       let (Ticket fields) = myTicket
+       in length fields
+
     indices :: [Index]
-    indices =
-      let (Ticket fields) = myTicket
-       in zipWith const [0 ..] fields
+    indices = [0..ticketLength - 1]
 
-    missing :: Assignment -> [String]
-    missing assignment = filter (`Map.notMember` assignment) labels
-
-    choices :: Assignment -> [String] -> [(String, Index)]
-    choices assignment remaining =
-      [(s, i) | s <- remaining, i <- indices, possible s i]
+    choices :: Map.Map Index (Set.Set String)
+    choices = Map.fromList [(i, Set.fromList (filter (`possible` i) labels)) | i <- indices]
       where
         possible :: String -> Int -> Bool
-        possible label col = columnNotAssigned && columnSatisfiesRules
-          where
-            columnNotAssigned = col `notElem` Map.elems assignment
+        possible label col =
+          let Just rule = Map.lookup label ruleMap
+          in tickets |> map (ticketCol col) |> all (`satisfies` rule)
 
-            columnSatisfiesRules =
-              let Just rule = Map.lookup label ruleMap
-               in tickets |> map (ticketCol col) |> all (`satisfies` rule)
-
-    search :: Assignment -> Maybe Assignment
-    search assignment = case missing assignment of
-      [] -> return assignment
-      remaining ->
-        let choices' = choices assignment remaining
-            choose (s, i) = search (Map.insert s i assignment)
-         in asumMap choose choices'
+    search :: Index -> [(Int, String)] -> Maybe [(Int, String)]
+    search i assignment | i == ticketLength = return assignment
+    search i assignment =
+      let allChoices = Map.findWithDefault mempty i choices
+          notUsed = Set.difference allChoices (Set.fromList (map snd assignment))
+          choose s = search (i + 1) ((i, s) : assignment)
+      in asumMap choose notUsed
 
 theSolution :: A.Solution Input Output1 Output2
 theSolution = A.Solution readInput show show solve1 solve2
 
 problem :: A.Problem
-problem = A.Problem theSolution "data/input-2020-16-A-0.txt" [] [] [] [] (A.ProblemInfo "TODO" 2020 16)
+problem = A.Problem theSolution "data/prompt-2020-16.txt" [] [] [] [] (A.ProblemInfo "Ticket Translation" 2020 16)
