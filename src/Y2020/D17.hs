@@ -27,13 +27,17 @@ readInput txt = do
 
 setBounds :: Set Pos -> (Pos, Pos)
 setBounds set =
-  let (minX, minY, minZ, minW) = Set.findMin set
-      (maxX, maxY, maxZ, maxW) = Set.findMax set
-      extra = 12
-   in ((minX - extra, minY - extra, minZ - extra, minW - extra), (maxX + extra, maxY + extra, maxZ + extra, minW + extra))
+  let getMinMax f =
+        let mapped = Set.map f set
+        in (Set.findMin mapped, Set.findMax mapped)
+      (minX, maxX) = getMinMax (\(x, _, _, _) -> x)
+      (minY, maxY) = getMinMax (\(_, y, _, _) -> y)
+      (minZ, maxZ) = getMinMax (\(_, _, z, _) -> z)
+      (minW, maxW) = getMinMax (\(_, _, _, w) -> w)
+   in ((minX - 1, minY - 1, minZ - 1, minW - 1), (maxX + 1, maxY + 1, maxZ + 1, maxW + 1))
 
-step :: Grid -> Grid
-step Grid {..} = Grid newMin newMax newActive
+step :: Bool -> Grid -> Grid
+step p1 Grid {..} = Grid newMin newMax newActive
   where
     closePositions :: Pos -> [Pos]
     closePositions (posX, posY, posZ, posW) = [(posX + x, posY + y, posZ + z, posW + w) | x <- [-1 .. 1], y <- [-1 .. 1], z <- [-1 .. 1], w <- [-1 .. 1], (x, y, z, w) /= (0, 0, 0, 0)]
@@ -51,8 +55,9 @@ step Grid {..} = Grid newMin newMax newActive
 
     cells :: [Pos]
     cells =
-      let (minX, minY, minZ, minW) = gridMin
-          (maxX, maxY, maxZ, maxW) = gridMax
+      let (minX, minY, minZ, minW') = gridMin
+          (maxX, maxY, maxZ, maxW') = gridMax
+          (minW, maxW) = if p1 then (0, 0) else (minW', maxW')
        in [(x, y, z, w) | x <- [minX .. maxX], y <- [minY .. maxY], z <- [minZ .. maxZ], w <- [minW .. maxW]]
 
     newActive :: Set Pos
@@ -67,13 +72,15 @@ type Output1 = Int
 
 solve1 :: Input -> Output1
 solve1 grid =
-  let states = iterate step grid
+  let states = iterate (step True) grid
    in states !! 6 |> activeCount
 
 type Output2 = Int
 
 solve2 :: Input -> Output2
-solve2 = solve1
+solve2 grid =
+  let states = iterate (step False) grid
+   in states !! 6 |> activeCount
 
 theSolution :: A.Solution Input Output1 Output2
 theSolution = A.Solution readInput show show solve1 solve2
