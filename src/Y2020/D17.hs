@@ -3,6 +3,7 @@
 module Y2020.D17 (problem) where
 
 import qualified Advent as A
+import Data.Char (isDigit, isSpace)
 import Data.List ((!!))
 import qualified Data.Set as Set
 import Ourlude
