@@ -10,9 +10,9 @@ type Input = [Text]
 readInput :: Text -> Maybe Input
 readInput = lines >>> Just
 
-type Output1 = Int
+type Output1 = Maybe Int
 
-runReadP :: P.ReadP a -> String -> Maybe a
+runReadP :: P.ReadP a -> Text -> Maybe a
 runReadP parser =
   toString >>> filter (not <<< isSpace) >>> P.readP_to_S parser >>> viaNonEmpty (head >>> fst)
 
@@ -39,7 +39,7 @@ runArithmetic1 :: Text -> Maybe Int
 runArithmetic1 = runReadP (expression1 <* P.eof)
 
 solve1 :: Input -> Output1
-solve1 = map (runArithmetic1 >>> fromMaybe 0) >>> sum
+solve1 = traverse runArithmetic1 >>> fmap sum
 
 type Output2 = Maybe Int
 
