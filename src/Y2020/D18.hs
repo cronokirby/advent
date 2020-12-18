@@ -13,26 +13,30 @@ readInput = lines >>> Just
 type Output1 = Int
 
 runReadP :: P.ReadP a -> String -> Maybe a
-runReadP parser = filter (not <<< isSpace) >>> P.readP_to_S parser >>> viaNonEmpty (head >>> fst)
+runReadP parser =
+  toString >>> filter (not <<< isSpace) >>> P.readP_to_S parser >>> viaNonEmpty (head >>> fst)
 
 int :: P.ReadP Int
 int = do
   Just x <- readMaybe <$> P.munch1 isDigit
   return x
 
-expression1 :: P.ReadP Int
-expression1 = atom <|> binExpr '+' (+) <|> binExpr '*' (*)
-  where
-    binExpr c f = do
-      a <- atom
-      void (P.char c)
-      b <- expression1
-      return (f a b)
+opsL :: P.ReadP a -> P.ReadP (a -> a -> a) -> P.ReadP a
+opsL p sep = liftA2 (foldl' (|>)) p (many (liftA2 (<|) sep p))
 
-    atom = int <|> (P.char ')' *> expression1 <* P.char '(')
+mul :: P.ReadP (Int -> Int -> Int)
+mul = (*) <$ P.char '*'
+
+add :: P.ReadP (Int -> Int -> Int)
+add = (+) <$ P.char '+'
+
+expression1 :: P.ReadP Int
+expression1 = opsL atom (mul <|> add)
+  where
+    atom = int <|> (P.char '(' *> expression1 <* P.char ')')
 
 runArithmetic1 :: Text -> Maybe Int
-runArithmetic1 = toString >>> reverse >>> runReadP (expression1 <* P.eof)
+runArithmetic1 = runReadP (expression1 <* P.eof)
 
 solve1 :: Input -> Output1
 solve1 = map (runArithmetic1 >>> fromMaybe 0) >>> sum
@@ -42,14 +46,14 @@ type Output2 = Maybe Int
 expression2 :: P.ReadP Int
 expression2 = timesExpr
   where
-    timesExpr = product <$> P.sepBy1 addExpr (P.char '*')
+    timesExpr = opsL addExpr mul
 
-    addExpr = sum <$> P.sepBy1 atom (P.char '+')
+    addExpr = opsL atom add
 
     atom = int <|> (P.char '(' *> expression2 <* P.char ')')
 
 runArithmetic2 :: Text -> Maybe Int
-runArithmetic2 = toString >>> runReadP (expression2 <* P.eof)
+runArithmetic2 = runReadP (expression2 <* P.eof)
 
 solve2 :: Input -> Output2
 solve2 = traverse runArithmetic2 >>> fmap sum
