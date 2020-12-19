@@ -11,10 +11,9 @@ import Ourlude
 import qualified Text.ParserCombinators.ReadP as P
 
 data Rule
-  = After Int Int
+  = Chain [Int]
   | Char Char
-  | Or [Int] [Int]
-  | Indirect Int
+  | Or Rule Rule
   deriving (Eq, Show)
 
 type Input = (Map.Map Int Rule, [Text])
@@ -42,16 +41,14 @@ indexedRule = do
   return (index, rule')
 
 rule :: P.ReadP Rule
-rule = (uncurry After <$> afterRule) <|> charRule <|> orRule <|> indirectRule
+rule = chainRule <|> charRule <|> orRule
   where
-    afterRule = (,) <$> int <*> (P.skipSpaces *> int)
-    indirectRule = Indirect <$> int
+    chainRule = Chain <$> P.sepBy1 int P.skipSpaces
     charRule = Char <$> (P.char '"' *> P.satisfy (const True) <* P.char '"')
     orRule = do
-      let ints = P.sepBy1 int P.skipSpaces
-      r1 <- ints
+      r1 <- chainRule
       void (P.string " | ")
-      r2 <- ints
+      r2 <- chainRule
       return (Or r1 r2)
 
 int :: P.ReadP Int
@@ -76,9 +73,8 @@ makeParser ruleMap = do
             getP :: Rule -> P.ReadP ()
             getP = \case
               Char c -> void (P.char c)
-              Indirect j -> parserMap ! j
-              After i1 i2 -> parserMap ! i1 *> parserMap ! i2
-              Or a b -> void (traverse (parserMap !) a <|> traverse (parserMap !) b)
+              Chain is -> traverse_ (parserMap !) is
+              Or a b -> getP a <|> getP b
 
 parses :: P.ReadP a -> Text -> Bool
 parses p = toString >>> P.readP_to_S p >>> null >>> not
@@ -91,7 +87,10 @@ type Output2 = Int
 solve2 :: Input -> Output2
 solve2 (rules, messages) = messages |> filter (parses (makeParser rules')) |> length
   where
-    newRules = [(8, Or [42] [42, 8]), (11, Or [42, 31] [42, 11, 31])]
+    newRules =
+      [ (8, Or (Chain [42]) (Chain [42, 8])),
+        (11, Or (Chain [42, 31]) (Chain [42, 11, 31]))
+      ]
     rules' = Map.fromList newRules <> rules
 
 theSolution :: A.Solution Input Output1 Output2
