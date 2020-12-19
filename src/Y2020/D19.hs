@@ -85,7 +85,7 @@ solve1 (rules, messages) = messages |> filter (parses (makeParser rules)) |> len
 type Output2 = Int
 
 solve2 :: Input -> Output2
-solve2 (rules, messages) = messages |> filter (parses (makerParser rules')) |> length
+solve2 (rules, messages) = messages |> filter (parses (makeParser rules')) |> length
   where
     newRules =
       Map.fromList
