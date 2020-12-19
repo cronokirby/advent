@@ -98,4 +98,4 @@ theSolution :: A.Solution Input Output1 Output2
 theSolution = A.Solution readInput show show solve1 solve2
 
 problem :: A.Problem
-problem = A.Problem theSolution "data/input-2020-19-A-0.txt" [] [] [] [] (A.ProblemInfo "TODO" 2020 19)
+problem = A.Problem theSolution "data/prompt-2020-19.txt" [] [] [] [] (A.ProblemInfo "TODO" 2020 19)
