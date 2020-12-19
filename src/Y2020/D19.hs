@@ -61,43 +61,38 @@ int = do
 
 type Output1 = Int
 
-makeParserMap :: Map.Map Int Rule -> Map.Map Int (P.ReadP ())
-makeParserMap ruleMap = parserMap
-  where
-    parserMap :: Map.Map Int (P.ReadP ())
-    parserMap = Map.map getP ruleMap
-      where
-        getP :: Rule -> P.ReadP ()
-        getP = \case
-          Char c -> void (P.char c)
-          Indirect j -> parserMap ! j
-          After i1 i2 -> parserMap ! i1 *> parserMap ! i2
-          Or a b -> void (traverse (parserMap !) a <|> traverse (parserMap !) b)
-
-makeParser1 :: Map.Map Int Rule -> P.ReadP ()
-makeParser1 ruleMap = do
+makeParser :: Map.Map Int Rule -> P.ReadP ()
+makeParser ruleMap = do
   let parserMap = makeParserMap ruleMap
   parserMap ! 0
   P.eof
+  where
+    makeParserMap :: Map.Map Int Rule -> Map.Map Int (P.ReadP ())
+    makeParserMap ruleMap = parserMap
+      where
+        parserMap :: Map.Map Int (P.ReadP ())
+        parserMap = Map.map getP ruleMap
+          where
+            getP :: Rule -> P.ReadP ()
+            getP = \case
+              Char c -> void (P.char c)
+              Indirect j -> parserMap ! j
+              After i1 i2 -> parserMap ! i1 *> parserMap ! i2
+              Or a b -> void (traverse (parserMap !) a <|> traverse (parserMap !) b)
 
 parses :: P.ReadP a -> Text -> Bool
 parses p = toString >>> P.readP_to_S p >>> null >>> not
 
 solve1 :: Input -> Output1
-solve1 (rules, messages) = messages |> filter (parses (makeParser1 rules)) |> length
+solve1 (rules, messages) = messages |> filter (parses (makeParser rules)) |> length
 
 type Output2 = Int
 
-makeParser2 :: Map.Map Int Rule -> P.ReadP ()
-makeParser2 ruleMap = do
-  let parserMap = makeParserMap ruleMap
-  starts <- some (parserMap ! 42)
-  closes <- some (parserMap ! 31)
-  guard (length starts > length closes)
-  P.eof
-
 solve2 :: Input -> Output2
-solve2 (rules, messages) = messages |> filter (parses (makeParser2 rules)) |> length
+solve2 (rules, messages) = messages |> filter (parses (makeParser rules')) |> length
+  where
+    newRules = [(8, Or [42] [42, 8]), (11, Or [42, 31] [42, 11, 31])]
+    rules' = Map.fromList newRules <> rules
 
 theSolution :: A.Solution Input Output1 Output2
 theSolution = A.Solution readInput show show solve1 solve2
