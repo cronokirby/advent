@@ -4,8 +4,8 @@ module Y2020.D19 where
 
 import qualified Advent as A
 import Data.Char (isDigit)
-import Data.Map.Strict ((!))
 import qualified Data.Map.Lazy as Map
+import Data.Map.Strict ((!))
 import qualified Data.Text as T
 import Ourlude
 import qualified Text.ParserCombinators.ReadP as P
@@ -79,7 +79,6 @@ makeParser1 ruleMap = do
   let parserMap = makeParserMap ruleMap
   parserMap ! 0
   P.eof
-
 
 parses :: P.ReadP a -> Text -> Bool
 parses p = toString >>> P.readP_to_S p >>> null >>> not
