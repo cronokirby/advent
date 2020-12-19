@@ -32,49 +32,45 @@ readInput txt = do
     getRule :: Text -> Maybe (Int, Rule)
     getRule = toString >>> P.readP_to_S indexedRule >>> viaNonEmpty (head >>> fst)
 
-indexedRule :: P.ReadP (Int, Rule)
-indexedRule = do
-  index <- int
-  void (P.string ": ")
-  rule' <- rule
-  P.eof
-  return (index, rule')
+    indexedRule :: P.ReadP (Int, Rule)
+    indexedRule = do
+      index <- int
+      void (P.string ": ")
+      rule' <- rule
+      P.eof
+      return (index, rule')
 
-rule :: P.ReadP Rule
-rule = chainRule <|> charRule <|> orRule
-  where
-    chainRule = Chain <$> P.sepBy1 int P.skipSpaces
-    charRule = Char <$> (P.char '"' *> P.satisfy (const True) <* P.char '"')
-    orRule = do
-      r1 <- chainRule
-      void (P.string " | ")
-      r2 <- chainRule
-      return (Or r1 r2)
+    rule :: P.ReadP Rule
+    rule = chainRule <|> charRule <|> orRule
+      where
+        chainRule = Chain <$> P.sepBy1 int P.skipSpaces
+        charRule = Char <$> (P.char '"' *> P.satisfy (const True) <* P.char '"')
+        orRule = do
+          r1 <- chainRule
+          void (P.string " | ")
+          r2 <- chainRule
+          return (Or r1 r2)
 
-int :: P.ReadP Int
-int = do
-  Just x <- readMaybe <$> P.munch1 isDigit
-  return x
+    int :: P.ReadP Int
+    int = do
+      Just x <- readMaybe <$> P.munch1 isDigit
+      return x
 
 type Output1 = Int
 
 makeParser :: Map.Map Int Rule -> P.ReadP ()
 makeParser ruleMap = do
-  let parserMap = makeParserMap ruleMap
   parserMap ! 0
   P.eof
   where
-    makeParserMap :: Map.Map Int Rule -> Map.Map Int (P.ReadP ())
-    makeParserMap ruleMap = parserMap
+    parserMap :: Map.Map Int (P.ReadP ())
+    parserMap = Map.map getP ruleMap
       where
-        parserMap :: Map.Map Int (P.ReadP ())
-        parserMap = Map.map getP ruleMap
-          where
-            getP :: Rule -> P.ReadP ()
-            getP = \case
-              Char c -> void (P.char c)
-              Chain is -> traverse_ (parserMap !) is
-              Or a b -> getP a <|> getP b
+        getP :: Rule -> P.ReadP ()
+        getP = \case
+          Char c -> void (P.char c)
+          Chain is -> traverse_ (parserMap !) is
+          Or a b -> getP a <|> getP b
 
 parses :: P.ReadP a -> Text -> Bool
 parses p = toString >>> P.readP_to_S p >>> null >>> not
