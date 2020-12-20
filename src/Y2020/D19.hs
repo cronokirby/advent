@@ -20,9 +20,10 @@ type Input = (Map.Map Int Rule, [Text])
 
 readInput :: Text -> Maybe Input
 readInput txt = do
-  (rulePart, linesPart) <- case T.splitOn "\n\n" txt of
-    [a, b] -> Just (a, b)
-    _ -> Nothing
+  (rulePart, linesPart) <-
+    case T.splitOn "\n\n" txt of
+      [a, b] -> Just (a, b)
+      _ -> Nothing
   rules <- getRules rulePart
   return (rules, lines linesPart)
   where
