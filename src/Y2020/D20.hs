@@ -139,10 +139,77 @@ solve1 pieces = do
   where
     ctx = makeContext pieces
 
-type Output2 = ()
+type Output2 = Maybe Int
+
+joinPlacement :: Placement -> Grid
+joinPlacement = Map.map stripBorders >>> glueMap
+  where
+    stripBorders :: Piece -> Grid
+    stripBorders (Piece _ (Grid size points)) =
+      points |> Set.filter (\(x, y) -> notBorder x && notBorder y)
+        |> Set.map (\(x, y) -> (x - 1, y - 1))
+        |> Grid (size - 2)
+      where
+        notBorder xy = xy > 0 && xy < size - 1
+
+    glueMap :: Map.Map (Int, Int) Grid -> Grid
+    glueMap mp = Map.toList mp |> foldMap (uncurry place) |> Grid newSize
+      where
+        place :: (Int, Int) -> Grid -> Set.Set (Int, Int)
+        place (relX, relY) (Grid _ points) = Set.map adjust points
+          where
+            adjust (x, y) = (x + relX * oldSize, y + relY * oldSize)
+
+        oldSize :: Int
+        oldSize =
+          let (_, Grid size _) = Map.findMin mp
+           in size
+
+        newSize :: Int
+        newSize = Map.size mp |> fromIntegral |> sqrt |> floor |> (* oldSize)
+
+countSerpents :: Grid -> Int
+countSerpents (Grid _ points) =
+  foldMap serpentPointsAt points
+    |> Set.size
+  where
+    serpent :: (Int, Int) -> [(Int, Int)]
+    serpent (x, y) = map (\(dx, dy) -> (x + dx, y + dy)) deltas
+      where
+        deltas =
+          [(0, 0),
+           (1, 1),
+           (4, 1),
+           (5, 0),
+           (6, 0),
+           (7, 1),
+           (10, 1),
+           (11, 0),
+           (12, 0),
+           (13, 1),
+           (16, 1),
+           (15, 0),
+           (16, -1),
+           (16, 0),
+           (17, 0)
+          ]
+
+    serpentPointsAt :: (Int, Int) -> Set.Set (Int, Int)
+    serpentPointsAt pos =
+      let theSerpent = serpent pos
+       in if all (`Set.member` points) theSerpent
+            then Set.fromList theSerpent
+            else mempty
 
 solve2 :: Input -> Output2
-solve2 _ = ()
+solve2 pieces = do
+  placement <- findPlacement ctx
+  let joined@(Grid _ set) = joinPlacement placement
+      grids = arrangements (Piece 0 joined) |> map pieceGrid
+      serpents = grids |> map countSerpents |> sum
+  return (Set.size set - serpents)
+  where
+    ctx = makeContext pieces
 
 theSolution :: A.Solution Input Output1 Output2
 theSolution = A.Solution readInput show show solve1 solve2
